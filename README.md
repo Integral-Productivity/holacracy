@@ -40,15 +40,25 @@ https://ipllc-glassfrog-mcp-server.vercel.app/mcp
 
 This is an HTTP MCP server protected by OAuth — **each user authorises with their own GlassFrog API key on first use**. No API keys are shared across users. The server is hosted by Integral Productivity LLC for convenience; the upstream server source is currently private (an official GlassFrog MCP server may be published later, at which point this plugin will repoint).
 
-To use the connector you need a GlassFrog API key:
+### Which GlassFrog API does the MCP use?
+
+The deployed MCP currently calls the **GlassFrog REST API v3** (`https://api.glassfrog.com/api/v3`). An API v4 / GraphQL variant is in development; when it lands, this plugin will repoint and bump the version. Either way, the credential you need to generate is the same — a single **GlassFrog API key** scoped to your user account.
+
+### Generate a GlassFrog API key
+
+The MCP authenticates to GlassFrog with an `X-Auth-Token` header containing your personal API key (same permissions as your user account). To create one:
 
 1. Log into [app.glassfrog.com](https://app.glassfrog.com)
 2. Click your name → **Profile / Account**
-3. Navigate to **API Keys**
+3. Navigate to **API Keys** (not OAuth applications — this is a separate, simpler credential)
 4. Generate a new key — label it something memorable like `claude-holacracy-plugin`
-5. Copy the key immediately (it will not be shown again)
+5. Copy the key immediately (it will not be shown again — if you lose it, regenerate)
 
-Then, the first time a skill invokes a `glassfrog_*` tool, Claude will run the OAuth handshake against the MCP server — paste your API key when prompted.
+There is only one token type to choose from — API keys carry the same scopes as your GlassFrog user account, so anything you can read or write in the GlassFrog UI is available to the MCP. Revoke or regenerate the key from the same page if you ever need to.
+
+### First use
+
+The first time a skill invokes a `glassfrog_*` tool, Claude runs the OAuth handshake against the MCP server — paste your API key when prompted. Tokens then refresh in the background; re-authentication is only required after 30 days of inactivity or if you regenerate the underlying GlassFrog API key.
 
 ### Working without GlassFrog
 
