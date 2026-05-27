@@ -14,7 +14,21 @@ name: release-please
 # Background: docs/adr/0002-use-tag-driven-stable-branch-for-marketplace-channel-publication.md
 # called out that the manual tag-push step would fail in practice. It did,
 # three times (v0.2.1, v0.2.2, v0.3.0 all merged without tags). This
-# workflow closes that gap.
+# workflow closed that gap — until #19 hit the enterprise
+# `can_approve_pull_request_reviews: false` policy that blocks GITHUB_TOKEN
+# from opening Release PRs. The fix is to mint an installation token from
+# the `ip-releaser` GitHub App and pass it to release-please-action.
+#
+# That App-mediated logic lives in devops-excellence (the canonical home
+# for any Integral-Productivity workflow that consumes a managed-identity
+# token). This workflow is now a thin caller of the reusable. Per
+# Integral-Productivity/ip-bots' CLAUDE.md, App identities live in
+# `ip-bots`; consumer logic that mints tokens from those identities lives
+# in `devops-excellence`; per-repo wiring lives here.
+#
+# OP_SERVICE_ACCOUNT_TOKEN is the 1Password service-account token the
+# reusable forwards into its read-releaser-pem-from-1p composite action.
+# It's an org-level secret per Integral-Productivity/ip-bots ADR-003.
 
 on:
   push:
@@ -27,9 +41,6 @@ permissions:
 
 jobs:
   release-please:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: googleapis/release-please-action@v4
-        with:
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
+    uses: Integral-Productivity/devops-excellence/.github/workflows/reusable-release-please.yml@main
+    secrets:
+      OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
