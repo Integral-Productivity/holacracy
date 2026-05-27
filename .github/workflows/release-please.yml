@@ -1,0 +1,35 @@
+name: release-please
+
+# Opens / updates a "Release PR" on every push to `main`. When merged, it
+# creates the matching `vX.Y.Z` git tag and GitHub Release, which in turn
+# fires `promote-stable.yml` to fast-forward the `stable` branch the
+# Integral-Productivity marketplace tracks.
+#
+# Pairs with:
+#   - release-please-config.json     (per-package release behavior)
+#   - .release-please-manifest.json  (current released version baseline)
+#   - version.txt                    (required by release-type: simple)
+#   - .github/workflows/promote-stable.yml  (consumes the tag we produce)
+#
+# Background: docs/adr/0002-use-tag-driven-stable-branch-for-marketplace-channel-publication.md
+# called out that the manual tag-push step would fail in practice. It did,
+# three times (v0.2.1, v0.2.2, v0.3.0 all merged without tags). This
+# workflow closes that gap.
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
